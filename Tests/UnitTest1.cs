@@ -14,7 +14,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Tests
 {
-    public class Tests
+    public class ExampleTest
     {
         [SetUp]
         public void Setup()
