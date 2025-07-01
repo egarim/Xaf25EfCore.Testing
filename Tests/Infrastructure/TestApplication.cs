@@ -3,7 +3,7 @@ using DevExpress.ExpressApp.Layout;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Tests
+namespace Tests.Infrastructure
 {
     class TestApplication : XafApplication
     {

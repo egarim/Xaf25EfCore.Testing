@@ -15,6 +15,7 @@ using Xaf25EfCore.Testing.Module.DatabaseUpdate;
 using Xaf25EfCore.Testing.Module.Services;
 using DevExpress.ExpressApp.Core.Internal;
 using DevExpress.ExpressApp.Updating;
+using Tests.Infrastructure;
 
 namespace Tests
 {

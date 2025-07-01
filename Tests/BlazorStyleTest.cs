@@ -1,4 +1,4 @@
-using DevExpress.EntityFrameworkCore.Security;
+﻿using DevExpress.EntityFrameworkCore.Security;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.EFCore;
 using DevExpress.ExpressApp.Security;
@@ -12,6 +12,7 @@ using Xaf25EfCore.Testing.Module.Services;
 using DevExpress.Persistent.Validation;
 using DevExpress.ExpressApp.Core;
 using DevExpress.ExpressApp.Core.Internal;
+using Tests.Infrastructure;
 
 namespace Tests
 {
@@ -131,11 +132,11 @@ namespace Tests
                 Assert.That(greeting, Is.EqualTo("Hello, World!"));
                 Assert.That(personalGreeting, Is.EqualTo("Hello, XAF User!"));
                 
-                Console.WriteLine("? Blazor-style test completed successfully with original TestingModule!");
+                Console.WriteLine("✅ Blazor-style test completed successfully with original TestingModule!");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("? Blazor-style test failed with error: " + ex.Message);
+                Console.WriteLine("❌ Blazor-style test failed with error: " + ex.Message);
                 Console.WriteLine("Stack trace: " + ex.StackTrace);
                 throw;
             }
