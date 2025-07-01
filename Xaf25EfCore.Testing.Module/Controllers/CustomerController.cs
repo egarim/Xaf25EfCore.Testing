@@ -15,12 +15,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xaf25EfCore.Testing.Module.BusinessObjects;
+using Xaf25EfCore.Testing.Module.Services;
 
 namespace Xaf25EfCore.Testing.Module.Controllers
 {
     // For more typical usage scenarios, be sure to check out https://docs.devexpress.com/eXpressAppFramework/DevExpress.ExpressApp.ViewController.
     public partial class CustomerController : ViewController
     {
+        public IHelloWorldService helloWorldService;
         public SimpleAction SetCustomerActive;
         // Use CodeRush to create Controllers and Actions with a few keystrokes.
         // https://docs.devexpress.com/CodeRushForRoslyn/403133/
@@ -47,6 +49,7 @@ namespace Xaf25EfCore.Testing.Module.Controllers
         protected override void OnActivated()
         {
             base.OnActivated();
+            this.helloWorldService = this.Application.ServiceProvider.GetService(typeof(IHelloWorldService)) as IHelloWorldService;
             // Perform various tasks depending on the target View.
         }
         protected override void OnViewControlsCreated()

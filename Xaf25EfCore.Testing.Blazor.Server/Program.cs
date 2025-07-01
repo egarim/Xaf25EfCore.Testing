@@ -43,6 +43,7 @@ public class Program : IDesignTimeApplicationFactory {
         Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder => {
                 webBuilder.UseStartup<Startup>();
+            
             });
     XafApplication IDesignTimeApplicationFactory.Create() {
         IHostBuilder hostBuilder = CreateHostBuilder(Array.Empty<string>());

@@ -1,36 +1,36 @@
-﻿using DevExpress.EntityFrameworkCore.Security;
+using DevExpress.EntityFrameworkCore.Security;
 using DevExpress.ExpressApp;
-using DevExpress.ExpressApp.Core;
 using DevExpress.ExpressApp.EFCore;
 using DevExpress.ExpressApp.Security;
-using DevExpress.Map.Native;
 using DevExpress.Persistent.BaseImpl.EF.PermissionPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Security.AccessControl;
 using Xaf25EfCore.Testing.Module;
 using Xaf25EfCore.Testing.Module.BusinessObjects;
 using Xaf25EfCore.Testing.Module.Controllers;
-using Xaf25EfCore.Testing.Module.DatabaseUpdate;
 using Xaf25EfCore.Testing.Module.Services;
+using DevExpress.Persistent.Validation;
+using DevExpress.ExpressApp.Core;
 using DevExpress.ExpressApp.Core.Internal;
-using DevExpress.ExpressApp.Updating;
 
 namespace Tests
 {
-    public class ExampleTest
+    public class BlazorStyleTest
     {
+        EFCoreObjectSpaceProvider<TestingEFCoreDbContext>? objectSpaceProvider;
+        TestApplication? application;
+
         [SetUp]
         public void Setup()
         {
         }
 
         [Test]
-        public void Test1()
+        public void Test1_BlazorStyle()
         {
             try
             {
-                Console.WriteLine("Starting test with service provider configuration...");
+                Console.WriteLine("Starting Blazor-style test with proper validation services...");
                 
                 // Create object space provider similar to Blazor application setup
                 objectSpaceProvider = new EFCoreObjectSpaceProvider<TestingEFCoreDbContext>(
@@ -46,14 +46,17 @@ namespace Tests
                 Exception exception;
                 var State = objectSpaceProvider.CheckDatabaseSchemaCompatibility(out exception);
 
-                // Configure services with validation support like in Startup.cs
+                // Configure services similar to Blazor Startup but manually register validation services
                 var services = new ServiceCollection();
                 
-                // Add services similar to what's configured in Startup.cs
+                // Add basic services
+                services.AddLogging();
                 services.AddScoped<IHelloWorldService, HelloWorldService>();
-                services.AddLogging(); // Basic logging service
 
-                // Add XAF-related services
+                // Register validation services manually
+                services.AddScoped<IValidator>(provider => new SimpleValidator());
+                
+                // Register the XAF internal services exactly like in the working ExampleTest
                 SharedControllersManagerContainer sharedControllersManagerContainer = new SharedControllersManagerContainer();
                 SharedTypesCacheContainer sharedTypesCacheContainer = new SharedTypesCacheContainer();
                 IObjectSpaceProviderContainer objectSpaceProviderContainer = new CustomObjectSpaceProviderContainer();
@@ -63,22 +66,22 @@ namespace Tests
                 services.AddSingleton<IObjectSpaceProviderContainer>(objectSpaceProviderContainer);
                 
                 var serviceProvider = services.BuildServiceProvider();
-                Console.WriteLine("Service provider configured successfully");
+                Console.WriteLine("Service provider configured with validation and XAF internal services");
 
-                // Create an instance of the test application with service provider (similar to Blazor setup)
+                // Create the test application with service provider
                 application = new TestApplication(serviceProvider);
                 Console.WriteLine("TestApplication created with service provider");
 
-                // Create a custom module without ValidationModule to avoid dependency issues
-                TestingModuleWithoutValidation testModule = new TestingModuleWithoutValidation();
-                application.Modules.Add(testModule);
-                Console.WriteLine("TestingModule added (without ValidationModule to avoid service dependency)");
+                // Add the original TestingModule (which includes ValidationModule)
+                var testingModule = new TestingModule();
+                application.Modules.Add(testingModule);
+                Console.WriteLine("Original TestingModule added (includes ValidationModule)");
 
-                // Setup the application with the object space provider
+                // Setup the application
                 application.Setup("TestApplication", objectSpaceProvider);
                 Console.WriteLine("Application setup completed");
 
-                // Test the service - this simulates getting services like in the Blazor application
+                // Test the service
                 var helloWorldService = application.ServiceProvider.GetService<IHelloWorldService>();
                 var greeting = helloWorldService?.GetGreeting();
                 Console.WriteLine($"Service greeting: {greeting}");
@@ -91,14 +94,11 @@ namespace Tests
 
                 var userAdmin = ObjectSpace.CreateObject<ApplicationUser>();
                 userAdmin.UserName = "Admin";
-                // Set a password if the standard authentication type is used
                 userAdmin.SetPassword("123456");
 
-                // The UserLoginInfo object requires a user object Id (Oid).
-                // Commit the user object to the database before you create a UserLoginInfo object. This will correctly initialize the user key property.
-                ObjectSpace.CommitChanges(); //This line persists created object(s).
+                ObjectSpace.CommitChanges();
                 ((ISecurityUserWithLoginInfo)userAdmin).CreateUserLoginInfo(SecurityDefaults.PasswordAuthentication, ObjectSpace.GetKeyValueAsString(userAdmin));
-                // If a role with the Administrators name doesn't exist in the database, create this role.
+                
                 PermissionPolicyRole adminRole = ObjectSpace.FirstOrDefault<PermissionPolicyRole>(r => r.Name == "Administrators");
                 if (adminRole == null)
                 {
@@ -107,7 +107,7 @@ namespace Tests
                 }
                 adminRole.IsAdministrative = true;
                 userAdmin.Roles.Add(adminRole);
-                ObjectSpace.CommitChanges(); //This line persists created object(s).
+                ObjectSpace.CommitChanges();
 
                 application.Security = Login("Admin", "123456", ObjectSpace);
                 Console.WriteLine("Security configured and user logged in");
@@ -131,11 +131,11 @@ namespace Tests
                 Assert.That(greeting, Is.EqualTo("Hello, World!"));
                 Assert.That(personalGreeting, Is.EqualTo("Hello, XAF User!"));
                 
-                Console.WriteLine("✅ Test completed successfully - No validation module duplication error!");
+                Console.WriteLine("? Blazor-style test completed successfully with original TestingModule!");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ Test failed with error: " + ex.Message);
+                Console.WriteLine("? Blazor-style test failed with error: " + ex.Message);
                 Console.WriteLine("Stack trace: " + ex.StackTrace);
                 throw;
             }
@@ -147,9 +147,6 @@ namespace Tests
             objectSpaceProvider?.Dispose();
             application?.Dispose();
         }
-        
-        EFCoreObjectSpaceProvider<TestingEFCoreDbContext>? objectSpaceProvider;
-        TestApplication application;
 
         private SecurityStrategyComplex Login(string userName, string password, IObjectSpace LoginObjectSpace)
         {
@@ -159,49 +156,93 @@ namespace Tests
 
             authentication.SetLogonParameters(new AuthenticationStandardLogonParameters(userName, password));
             security.Logon(LoginObjectSpace);
-            var SecureEfProvider = new SecuredEFCoreObjectSpaceProvider<TestingEFCoreDbContext>(security,
-             XafTypesInfo.Instance, null,
-             (builder, connectionString) => builder.UseSqlServer(connectionString)
-                     );
 
             return security;
         }
     }
 
-    // Custom testing module without ValidationModule to avoid service dependency issues
-    public sealed class TestingModuleWithoutValidation : ModuleBase 
+    // Simple implementation of CustomObjectSpaceProviderContainer for testing
+    public class CustomObjectSpaceProviderContainer : IObjectSpaceProviderContainer
     {
-        public TestingModuleWithoutValidation() 
+        private readonly List<IObjectSpaceProvider> _providers = new();
+
+        public void AddObjectSpaceProvider(IObjectSpaceProvider objectSpaceProvider)
         {
-            AdditionalExportedTypes.Add(typeof(Xaf25EfCore.Testing.Module.BusinessObjects.ApplicationUser));
-            AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.EF.PermissionPolicy.PermissionPolicyRole));
-            AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.EF.ModelDifference));
-            AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.EF.ModelDifferenceAspect));
-            AdditionalExportedTypes.Add(typeof(Customer));
-            
-            RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.SystemModule.SystemModule));
-            RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Security.SecurityModule));  
-            RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Objects.BusinessClassLibraryCustomizationModule));
-            RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.CloneObject.CloneObjectModule));
-            RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.ConditionalAppearance.ConditionalAppearanceModule));
-            RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Dashboards.DashboardsModule));
-            RequiredModuleTypes.Add(typeof(DevExpress.ExpressApp.Notifications.NotificationsModule));
-            // Removed ValidationModule to avoid the IValidator service dependency
-            
-            DevExpress.ExpressApp.Security.SecurityModule.UsedExportedTypes = DevExpress.Persistent.Base.UsedExportedTypes.Custom;
-            AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.EF.FileData));
-            AdditionalExportedTypes.Add(typeof(DevExpress.Persistent.BaseImpl.EF.FileAttachment));
+            _providers.Add(objectSpaceProvider);
         }
-        
-        public override IEnumerable<ModuleUpdater> GetModuleUpdaters(IObjectSpace objectSpace, Version versionFromDB) 
+
+        public void AddObjectSpaceProviders(IEnumerable<IObjectSpaceProvider> objectSpaceProviders)
         {
-            ModuleUpdater updater = new Xaf25EfCore.Testing.Module.DatabaseUpdate.Updater(objectSpace, versionFromDB);
-            return new ModuleUpdater[] { updater };
+            _providers.AddRange(objectSpaceProviders);
         }
-        
-        public override void Setup(XafApplication application) 
+
+        public void Clear()
         {
-            base.Setup(application);
+            _providers.Clear();
+        }
+
+        public IObjectSpaceProvider GetObjectSpaceProvider(Type objectType)
+        {
+            return _providers.FirstOrDefault() ?? throw new InvalidOperationException("No object space provider registered");
+        }
+
+        public IEnumerable<IObjectSpaceProvider> GetObjectSpaceProviders()
+        {
+            return _providers;
+        }
+
+        public void Dispose()
+        {
+            // Dispose implementation
+            foreach (var provider in _providers)
+            {
+                if (provider is IDisposable disposable)
+                    disposable.Dispose();
+            }
+            _providers.Clear();
+        }
+    }
+
+    // Minimal implementation of IValidator that delegates to the static Validator.RuleSet
+    public class SimpleValidator : IValidator
+    {
+        public IRuleSet RuleSet => Validator.RuleSet;
+
+        public RuleSetValidationResult ValidateTarget(DevExpress.ExpressApp.IObjectSpace objectSpace, object target, ContextIdentifier contextIdentifier)
+        {
+            return Validator.RuleSet.ValidateTarget(objectSpace, target, contextIdentifier);
+        }
+
+        public RuleSetValidationResult ValidateTarget(DevExpress.ExpressApp.IObjectSpace objectSpace, object target, ContextIdentifier contextIdentifier, bool inTransaction)
+        {
+            // Use the standard ValidateTarget method since the overload with bool doesn't match the RuleSet API
+            return Validator.RuleSet.ValidateTarget(objectSpace, target, contextIdentifier);
+        }
+
+        public RuleSetValidationResult ValidateAllTargets(DevExpress.ExpressApp.IObjectSpace objectSpace, ContextIdentifier contextIdentifier)
+        {
+            // Return an empty result since we can't easily map this
+            return new RuleSetValidationResult();
+        }
+
+        public RuleSetValidationResult ValidateAllTargets(DevExpress.ExpressApp.IObjectSpace objectSpace, ContextIdentifier contextIdentifier, bool inTransaction)
+        {
+            // Return an empty result
+            return new RuleSetValidationResult();
+        }
+
+        public void ClearRuleSetValidationResult()
+        {
+            // Implementation not needed for testing
+        }
+
+        public RuleSetValidationResult RuleSetValidationResult 
+        { 
+            get 
+            { 
+                // Return an empty validation result
+                return new RuleSetValidationResult();
+            } 
         }
     }
 }

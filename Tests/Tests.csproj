@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Xaf25EfCore.Testing.Module\Xaf25EfCore.Testing.Module.csproj" />
+		<ProjectReference Include="..\Xaf25EfCore.Testing.Blazor.Server\Xaf25EfCore.Testing.Blazor.Server.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
