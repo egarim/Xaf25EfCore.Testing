@@ -36,10 +36,26 @@ public class Updater : ModuleUpdater {
 
         ObjectSpace.CommitChanges(); //This line persists created object(s).
 
-        UserManager userManager = ObjectSpace.ServiceProvider.GetRequiredService<UserManager>();
+        // Try to get UserManager from service provider, but handle the case where it's not available (like in tests)
+        UserManager? userManager = ObjectSpace.ServiceProvider?.GetService<UserManager>();
+        
+        if (userManager != null)
+        {
+            // Use UserManager when available (normal application scenario)
+            CreateUsersWithUserManager(userManager, defaultRole, adminRole);
+        }
+        else
+        {
+            // Fallback to manual user creation when UserManager is not available (test scenarios)
+            CreateUsersManually(defaultRole, adminRole);
+        }
 
-       
+        ObjectSpace.CommitChanges(); //This line persists created object(s).
+#endif
+    }
 
+    private void CreateUsersWithUserManager(UserManager userManager, PermissionPolicyRole defaultRole, PermissionPolicyRole adminRole)
+    {
         // If a user named 'User' doesn't exist in the database, create this user
         if (userManager.FindUserByName<ApplicationUser>(ObjectSpace, "User") == null) {
             // Set a password if the standard authentication type is used
@@ -59,10 +75,31 @@ public class Updater : ModuleUpdater {
                 user.Roles.Add(adminRole);
             });
         }
-
-        ObjectSpace.CommitChanges(); //This line persists created object(s).
-#endif
     }
+
+    private void CreateUsersManually(PermissionPolicyRole defaultRole, PermissionPolicyRole adminRole)
+    {
+        // Create 'User' manually if it doesn't exist
+        ApplicationUser? existingUser = ObjectSpace.FirstOrDefault<ApplicationUser>(u => u.UserName == "User");
+        if (existingUser == null)
+        {
+            ApplicationUser user = ObjectSpace.CreateObject<ApplicationUser>();
+            user.UserName = "User";
+            user.SetPassword(""); // Empty password for testing
+            user.Roles.Add(defaultRole);
+        }
+
+        // Create 'Admin' manually if it doesn't exist  
+        ApplicationUser? existingAdmin = ObjectSpace.FirstOrDefault<ApplicationUser>(u => u.UserName == "Admin");
+        if (existingAdmin == null)
+        {
+            ApplicationUser admin = ObjectSpace.CreateObject<ApplicationUser>();
+            admin.UserName = "Admin";
+            admin.SetPassword(""); // Empty password for testing
+            admin.Roles.Add(adminRole);
+        }
+    }
+
     public override void UpdateDatabaseBeforeUpdateSchema() {
         base.UpdateDatabaseBeforeUpdateSchema();
     }

@@ -16,7 +16,7 @@ using Tests.Infrastructure;
 
 namespace Tests
 {
-    public class BlazorStyleTest
+    public class TestWithCustomValidationServiceAndObjectSpaceContainer
     {
         EFCoreObjectSpaceProvider<TestingEFCoreDbContext>? objectSpaceProvider;
         TestApplication? application;
@@ -27,7 +27,7 @@ namespace Tests
         }
 
         [Test]
-        public void Test1_BlazorStyle()
+        public void Test1()
         {
             try
             {

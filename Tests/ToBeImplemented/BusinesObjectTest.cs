@@ -6,7 +6,7 @@ using DevExpress.Xpo;
 
 using NUnit.Framework;
 
-namespace Tests
+namespace Tests.ToBeImplemented
 {
     public class BusinessObjectTest
     {

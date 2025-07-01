@@ -12,7 +12,7 @@ using Xaf25EfCore.Testing.Module;
 
 namespace Tests
 {
-    public class StartupBasedTest
+    public class TestUsingStartup
     {
         private IServiceProvider? serviceProvider;
         private TestingBlazorApplication? xafApplication;
