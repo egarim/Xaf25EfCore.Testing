@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -13,10 +14,12 @@
 		<PackageReference Include="xunit" />
 		<PackageReference Include="xunit.runner.visualstudio" />
 	</ItemGroup>
-	<!--<ItemGroup>
-		<ProjectReference Include="..\Xaf25EfCore.Testing.Module\Xaf25EfCore.Testing.Module.csproj" />
-		<ProjectReference Include="..\Xaf25EfCore.Testing.Blazor.Server\Xaf25EfCore.Testing.Blazor.Server.csproj" />
-	</ItemGroup>-->
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Xaf25EfCore.Testing.Blazor.Server\Xaf25EfCore.Testing.Blazor.Server.csproj" />
+	  <ProjectReference Include="..\Xaf25EfCore.Testing.Module\Xaf25EfCore.Testing.Module.csproj" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<Using Include="Xunit" />
 	</ItemGroup>
