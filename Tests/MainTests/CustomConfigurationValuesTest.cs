@@ -163,7 +163,7 @@ namespace Tests.MainTests
             return base.DefaultConfigurationGetConfiguration(Values);
         }
 
-        protected override SecurityStrategyComplex Login(string userName, string password, IObjectSpace loginObjectSpace, EFCoreObjectSpaceProvider<TestingEFCoreDbContext> objectSpaceProvider)
+        protected override SecurityStrategyComplex Login(string userName, string password, IObjectSpace loginObjectSpace, IObjectSpaceProvider objectSpaceProvider)
         {
             return base.Login(userName, password, loginObjectSpace, objectSpaceProvider);
         }

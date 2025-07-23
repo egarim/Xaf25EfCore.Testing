@@ -109,7 +109,7 @@ namespace Tests.MainTests
                 ObjectSpaceProvider = objectSpaceProvider
             };
         }
-        protected virtual SecurityStrategyComplex Login(string userName, string password, IObjectSpace loginObjectSpace, EFCoreObjectSpaceProvider<TestingEFCoreDbContext> objectSpaceProvider)
+        protected virtual SecurityStrategyComplex Login(string userName, string password, IObjectSpace loginObjectSpace, IObjectSpaceProvider objectSpaceProvider)
         {
             AuthenticationStandard authentication = new AuthenticationStandard();
             var security = new SecurityStrategyComplex(typeof(ApplicationUser), typeof(PermissionPolicyRole), authentication);
