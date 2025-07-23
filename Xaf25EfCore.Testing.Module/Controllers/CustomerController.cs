@@ -1,4 +1,5 @@
-﻿using DevExpress.Data.Filtering;
+﻿
+using DevExpress.Data.Filtering;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.Actions;
 using DevExpress.ExpressApp.Editors;
@@ -10,6 +11,7 @@ using DevExpress.ExpressApp.Utils;
 using DevExpress.Persistent.Base;
 using DevExpress.Persistent.Validation;
 using DevExpress.XtraRichEdit;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,8 +52,10 @@ namespace Xaf25EfCore.Testing.Module.Controllers
         {
             base.OnActivated();
             this.helloWorldService = this.Application.ServiceProvider.GetService(typeof(IHelloWorldService)) as IHelloWorldService;
+            var Config=  this.Application.ServiceProvider.GetService(typeof(IConfiguration)) as IConfiguration;
             // Perform various tasks depending on the target View.
         }
+
         protected override void OnViewControlsCreated()
         {
             base.OnViewControlsCreated();

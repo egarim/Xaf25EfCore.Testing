@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.EntityFrameworkCore;
 using Xaf25EfCore.Testing.Blazor.Server.Services;
 using DevExpress.Persistent.BaseImpl.EF.PermissionPolicy;
+using Xaf25EfCore.Testing.Module.Services;
 
 namespace Xaf25EfCore.Testing.Blazor.Server;
 
@@ -22,7 +23,8 @@ public class Startup {
     // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
     public void ConfigureServices(IServiceCollection services) {
         services.AddSingleton(typeof(Microsoft.AspNetCore.SignalR.HubConnectionHandler<>), typeof(ProxyHubConnectionHandler<>));
-
+        services.AddSingleton(this.Configuration);
+        services.AddSingleton<IHelloWorldService, HelloWorldService>();
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddHttpContextAccessor();
