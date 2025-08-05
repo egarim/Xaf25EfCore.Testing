@@ -1,11 +1,16 @@
 ﻿using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.EFCore;
+using DevExpress.ExpressApp.Model;
 using DevExpress.ExpressApp.Security;
+using DevExpress.ExpressApp.Services.Localization;
 using DevExpress.Persistent.BaseImpl.EF.PermissionPolicy;
+using DevExpress.XtraReports.Native;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +44,28 @@ namespace Tests.MainTests
 
                 Console.WriteLine("TestingBlazorApplication created and configured");
                 Console.WriteLine("Application modules count: " + components.XafApplication.Modules.Count);
+                //https://docs.devexpress.com/eXpressAppFramework/112595/localization/localization-basics
+                components.XafApplication.CustomizeLanguage += (sender, e) =>
+                {
+                    // Customize language settings if needed
+                    e.LanguageName = "ES"; // Set to Spanish for this test
+                };
+
+                components.XafApplication.SetLanguage("ES");
+                components.XafApplication.SetFormattingCulture("ES");
+
+                var Ad = components.XafApplication.Model.ActionDesign as IModelActionDesign;
+
+                var CaptionHelperProvider = components.XafApplication.ServiceProvider.GetService<ICaptionHelperProvider>().GetCaptionHelper();
+            
+               
+                for (int i = 0; i < components.XafApplication.Model.ActionDesign.Actions.Count; i++)
+                {
+                    
+                    var ActionModel= components.XafApplication.Model.ActionDesign.Actions.GetNode(i) as IModelAction;
+                    Debug.WriteLine(ActionModel.Id);
+                    Debug.WriteLine($"Node {i}: {ActionModel.Id} - {ActionModel.Caption}- {ActionModel.GetType()}");
+                }
 
                 // Log all modules
                 foreach (var module in components.XafApplication.Modules)
