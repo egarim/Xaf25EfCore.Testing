@@ -1,8 +1,10 @@
 ﻿using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.EFCore;
 using DevExpress.ExpressApp.Model;
+using DevExpress.ExpressApp.Model.Core;
 using DevExpress.ExpressApp.Security;
 using DevExpress.ExpressApp.Services.Localization;
+using DevExpress.ExpressApp.Utils;
 using DevExpress.Persistent.BaseImpl.EF.PermissionPolicy;
 using DevExpress.XtraReports.Native;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -29,6 +31,26 @@ namespace Tests.MainTests
         {
             base.Setup();
         }
+
+        [Test]
+        public void Test1()
+        {
+
+            MyModule module = new MyModule();
+            ModelApplicationCreatorProperties properties = ModelApplicationCreatorProperties.CreateDefault();
+            ModelApplicationCreator modelApplicationCreator = ModelApplicationCreator.GetModelApplicationCreator(properties);
+            ModelApplicationBase modelApplicationBase = modelApplicationCreator.CreateModelApplication();
+            modelApplicationBase.AddAspect("de-DE");
+            module.DiffsStore.Load(modelApplicationBase);
+            IModelApplication modelApplication = (IModelApplication)modelApplicationBase;
+            modelApplicationBase.SetCurrentAspect("de-DE");
+            CaptionHelper.Setup(modelApplication);
+
+            var value = CaptionHelper.GetLocalizedText("Messages", "Test");
+
+            //Assert.AreEqual("testValueGerman", CaptionHelper.GetLocalizedText("Messages", "Test"));
+        }
+
         [Test]
         public void DemoTest()
         {
@@ -48,17 +70,31 @@ namespace Tests.MainTests
                 components.XafApplication.CustomizeLanguage += (sender, e) =>
                 {
                     // Customize language settings if needed
-                    e.LanguageName = "ES"; // Set to Spanish for this test
+                    e.LanguageName = "es"; // Set to Spanish for this test
                 };
 
-                components.XafApplication.SetLanguage("ES");
-                components.XafApplication.SetFormattingCulture("ES");
+                components.XafApplication.SetLanguage("es");
+                components.XafApplication.SetFormattingCulture("es");
 
                 var Ad = components.XafApplication.Model.ActionDesign as IModelActionDesign;
 
                 var CaptionHelperProvider = components.XafApplication.ServiceProvider.GetService<ICaptionHelperProvider>().GetCaptionHelper();
-            
-               
+
+                // Log all modules
+                foreach (var module in components.XafApplication.Modules)
+                {
+
+                    ModelApplicationCreatorProperties properties = ModelApplicationCreatorProperties.CreateDefault();
+                    ModelApplicationCreator modelApplicationCreator = ModelApplicationCreator.GetModelApplicationCreator(properties);
+                    ModelApplicationBase modelApplicationBase = modelApplicationCreator.CreateModelApplication();
+                    modelApplicationBase.AddAspect("es");
+                    module.DiffsStore.Load(modelApplicationBase);
+                    IModelApplication modelApplication = (IModelApplication)modelApplicationBase;
+                    modelApplicationBase.SetCurrentAspect("es");
+                    CaptionHelper.Setup(modelApplication);
+
+                    Console.WriteLine("Module found: " + module.GetType().Name);
+                }
                 for (int i = 0; i < components.XafApplication.Model.ActionDesign.Actions.Count; i++)
                 {
                     
@@ -67,11 +103,7 @@ namespace Tests.MainTests
                     Debug.WriteLine($"Node {i}: {ActionModel.Id} - {ActionModel.Caption}- {ActionModel.GetType()}");
                 }
 
-                // Log all modules
-                foreach (var module in components.XafApplication.Modules)
-                {
-                    Console.WriteLine("Module found: " + module.GetType().Name);
-                }
+               
 
                 // Verify ValidationModule is present
                 var validationModule = components.XafApplication.Modules.FirstOrDefault(m => m.GetType().Name.Contains("Validation"));
